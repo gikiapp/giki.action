@@ -1,13 +1,9 @@
-name: 'Wait'
-description: 'Wait a designated number of milliseconds'
+name: 'giki.action'
+description: 'Git commit to giki.app'
 inputs:
-  milliseconds:  # id of input
-    description: 'number of milliseconds to wait'
+  token:
+    description: 'token your giki account'
     required: true
-    default: '1000'
-outputs:
-  time: # output will be available to future steps
-    description: 'The message to output'
 runs:
   using: 'node12'
   main: 'dist/index.js'
