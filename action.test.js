@@ -1,7 +1,7 @@
 const process = require("process");
 const cp = require("child_process");
 const path = require("path");
-const { getCommitMessage } = require("./index");
+const { getCommitMessage } = require("./action");
 
 test("getCommitMessage", async () => {
   const msg = await getCommitMessage("a0f20010acd6619e621ab363394376da7f33d6c6");

@@ -2,8 +2,8 @@ require('./sourcemap-register.js');module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 2932:
-/***/ ((__unused_webpack_module, __unused_webpack_exports, __nccwpck_require__) => {
+/***/ 4582:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 const github = __nccwpck_require__(5438);
 const core = __nccwpck_require__(2186);
@@ -11,58 +11,61 @@ const exec = __nccwpck_require__(1514);
 const API = __nccwpck_require__(9716);
 
 async function publish(token, text) {
-  const api = new API({ env: "production" });
-  api.token(token);
-  const res = await api.save("talks", {
-    text: text,
-  });
-  if (res.ok) {
-    core.info("message published to giki.app successfully");
-  } else {
-    core.warning("message published failure: " + res.status);
-  }
+	const api = new API({ env: "production" });
+	api.token(token);
+	const res = await api.save("talks", {
+		text: text,
+	});
+	if (res.ok) {
+		core.info("message published to giki.app successfully");
+	} else {
+		core.warning("message published failure: " + res.status);
+	}
 }
 
 async function getCommitMessage(sha) {
-  let message = "";
+	const args = ["rev-list", "--format=%B", "--no-merges", "--max-count=1", sha];
+	const output = await exec.getExecOutput("git", args, {});
 
-  const options = {
-    listeners: {
-      stdout: (data) => {
-        // The command will return like following format of message, we only care about the message message for now.
-        //
-        //  $ git rev-list --no-merges --max-count=1 --format=%s%B 0dc4b1874171678739dfed0c8dd32b3b35af2bb0
-        //    commit 0dc4b1874171678739dfed0c8dd32b3b35af2bb0
-        //    v0.0.3 releasev0.0.3 release
-        //
-        // So we skip the first line.
-        if (!data.toString().startsWith('commit ')) {
-          message += data.toString();
-        }
-      },
-    },
-  };
+	const message = output.stdout
+		.split(/\n/)
+		.filter((l) => l.length != 0 && !l.startsWith("commit "))
+		.join("");
 
-  const args = ["rev-list", "--format=%B", "--no-merges", "--max-count=3", sha];
+	console.warn("+++++++");
+	console.warn(output.stdout);
+	console.warn("+++++++");
+	console.warn(message);
+	console.warn("+++++++");
 
-  await exec.exec("git", args, options);
-  message.trim();
-
-  return message;
+	return message;
 }
 
 // most @actions toolkit packages have async methods
 async function run() {
-  try {
-    const token = core.getInput("token");
-    const msg = await getCommitMessage(github.context.sha);
-    core.info("message is " + msg);
-    core.info("token is ", msg);
-    publish(token, msg);
-  } catch (error) {
-    core.setFailed(error.message);
-  }
+	try {
+		const token = core.getInput("token");
+		const msg = await getCommitMessage(github.context.sha);
+		core.info("message is " + msg);
+		core.info("token is ", msg);
+		publish(token, msg);
+	} catch (error) {
+		core.setFailed(error.message);
+	}
 }
+
+module.exports = {
+	getCommitMessage: getCommitMessage,
+	run: run,
+};
+
+
+/***/ }),
+
+/***/ 2932:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const { run } = __nccwpck_require__(4582);
 
 run();
 
