@@ -1,6 +1,6 @@
 const { messageOf } = require("./action");
 
 test("messageOf", async () => {
-  const msg = await messageOf("a0f20010acd6619e621ab363394376da7f33d6c6");
+  const msg = await messageOf("2498a9f3f2a667476bb92072bc0e3fd9634572bc");
   expect(msg).toEqual("works");
 });
