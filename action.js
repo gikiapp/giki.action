@@ -40,7 +40,7 @@ async function run() {
 		const token = core.getInput("token");
 		const msg = await getCommitMessage(github.context.sha);
 		core.info("message is " + msg);
-		core.info("token is ", msg);
+		core.info("token is " + token);
 		publish(token, msg);
 	} catch (error) {
 		core.setFailed(error.message);
