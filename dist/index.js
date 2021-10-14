@@ -5,58 +5,37 @@ require('./sourcemap-register.js');module.exports =
 /***/ 4582:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-const github = __nccwpck_require__(5438);
-const core = __nccwpck_require__(2186);
 const exec = __nccwpck_require__(1514);
 const API = __nccwpck_require__(9716);
 
 async function publish(token, text) {
 	const api = new API({ env: "production" });
 	api.token(token);
-	const res = await api.save("talks", {
-		text: text,
-	});
-	if (res.ok) {
-		core.info("message published to giki.app successfully");
-	} else {
-		core.warning("message published failure: " + res.status);
+	try {
+		const res = await api.save("talks", {
+			text: text,
+		});
+		if (!res.ok) {
+			throw new Error(`publish go giki.app failed: ${res.status}`);
+		}
+	} catch (e) {
+		throw new Error(`publish go giki.app failed: ${e}`);
 	}
 }
 
-async function getCommitMessage(sha) {
+async function messageOf(sha) {
 	const args = ["rev-list", "--format=%B", "--no-merges", "--max-count=1", sha];
 	const output = await exec.getExecOutput("git", args, {});
 
-	const message = output.stdout
+	return output.stdout
 		.split(/\n/)
 		.filter((l) => l.length != 0 && !l.startsWith("commit "))
 		.join("");
-
-	console.warn("+++++++");
-	console.warn(output.stdout);
-	console.warn("+++++++");
-	console.warn(message);
-	console.warn("+++++++");
-
-	return message;
-}
-
-// most @actions toolkit packages have async methods
-async function run() {
-	try {
-		const token = core.getInput("token");
-		const msg = await getCommitMessage(github.context.sha);
-		core.info("message is " + msg);
-		core.info("token is " + token);
-		publish(token, msg);
-	} catch (error) {
-		core.setFailed(error.message);
-	}
 }
 
 module.exports = {
-	getCommitMessage: getCommitMessage,
-	run: run,
+	messageOf: messageOf,
+	publish: publish,
 };
 
 
@@ -65,14 +44,28 @@ module.exports = {
 /***/ 2932:
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __nccwpck_require__) => {
 
-const { run } = __nccwpck_require__(4582);
+const { messageOf, publish } = __nccwpck_require__(4582);
+const core = __nccwpck_require__(2186);
+const github = __nccwpck_require__(5438);
+
+async function run() {
+	try {
+		const token = core.getInput("token");
+		const message = await messageOf(github.context.sha);
+		core.info(`publish to giki.app ${message} ${token}`);
+		publish(token, message);
+		core.info("message published to giki.app successfully");
+	} catch (error) {
+		core.setFailed(error.message);
+	}
+}
 
 run();
 
 
 /***/ }),
 
-/***/ 7351:
+/***/ 5241:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -180,7 +173,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-const command_1 = __nccwpck_require__(7351);
+const command_1 = __nccwpck_require__(5241);
 const file_command_1 = __nccwpck_require__(717);
 const utils_1 = __nccwpck_require__(5278);
 const os = __importStar(__nccwpck_require__(2087));
@@ -614,7 +607,7 @@ const os = __importStar(__nccwpck_require__(2087));
 const events = __importStar(__nccwpck_require__(8614));
 const child = __importStar(__nccwpck_require__(3129));
 const path = __importStar(__nccwpck_require__(5622));
-const io = __importStar(__nccwpck_require__(7436));
+const io = __importStar(__nccwpck_require__(7351));
 const ioUtil = __importStar(__nccwpck_require__(1962));
 const timers_1 = __nccwpck_require__(8213);
 /* eslint-disable @typescript-eslint/unbound-method */
@@ -2209,7 +2202,7 @@ exports.getCmdPath = getCmdPath;
 
 /***/ }),
 
-/***/ 7436:
+/***/ 7351:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
